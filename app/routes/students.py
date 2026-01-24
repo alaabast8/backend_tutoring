@@ -37,11 +37,15 @@ def login_student(username: str, password: str, db: Session = Depends(get_db)):
     # Find user by username
     user = db.query(Student).filter(Student.username == username).first()
     
-    # Check if user exists and password is correct using our new verify_password function
     if not user or not verify_password(password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid username or password"
         )
     
-    return {"message": "Login successful", "username": user.username}
+    # ADD THE ID HERE
+    return {
+        "message": "Login successful", 
+        "username": user.username,
+        "id": user.id  # <--- THIS IS CRUCIAL
+    }

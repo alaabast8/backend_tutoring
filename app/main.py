@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .database import engine, Base
-from .routes import doctors, students, ratings
+from .routes import doctors, students, ratings ,studentInfo
 from fastapi.middleware.cors import CORSMiddleware
 
 # This command triggers the creation of tables in PostgreSQL
@@ -26,6 +26,7 @@ app.add_middleware(
 app.include_router(doctors.router)
 app.include_router(students.router)
 app.include_router(ratings.router)
+app.include_router(studentInfo.router)
 
 @app.get("/")
 def read_root():
