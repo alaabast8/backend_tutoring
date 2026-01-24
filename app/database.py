@@ -12,7 +12,7 @@ load_dotenv()
 # --- DATABASE CONNECTION ---
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_engine(DATABASE_URL,pool_pre_ping=True,)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -68,7 +68,6 @@ class StudentInfo(Base):
     dob = Column(String)  # Format: YYYY-MM-DD
     academic_year = Column(Integer)
 
-    # Database level constraint for year 0-5
     __table_args__ = (
         CheckConstraint('academic_year >= 0 AND academic_year <= 5', name='year_range_check'),
     )
@@ -83,6 +82,20 @@ class Doctor(Base):
     contact = Column(String)
     price_per_hour = Column(Float)
 
+    # Relationship to professional info
+    profile = relationship("DoctorInfo", back_populates="owner", uselist=False)
+
+class DoctorInfo(Base):
+    __tablename__ = "doctor_info"
+    id = Column(Integer, primary_key=True, index=True)
+    doctor_id = Column(Integer, ForeignKey("doctors.id"), unique=True)
+    uni_name = Column(String)
+    faculty = Column(String)
+    department = Column(String)
+    start_teaching_year = Column(Integer)
+
+    owner = relationship("Doctor", back_populates="profile")
+
 class StdDrRate(Base):
     __tablename__ = "ratings"
     id = Column(Integer, primary_key=True, index=True)
@@ -90,15 +103,14 @@ class StdDrRate(Base):
     doctor_id = Column(Integer, ForeignKey("doctors.id"))
     rating = Column(Integer)
 
-# --- PYDANTIC SCHEMAS (For API Validation) ---
+# --- PYDANTIC SCHEMAS ---
 
-# Student Schemas
+# --- STUDENT SCHEMAS ---
 class StudentCreate(BaseModel):
     username: str
     email: EmailStr
     password: str
 
-# Student Info Schemas
 class StudentInfoBase(BaseModel):
     first_name: str
     last_name: str
@@ -126,12 +138,27 @@ class StudentInfoUpdate(BaseModel):
     dob: Optional[str] = None
     academic_year: Optional[int] = None
 
-# Doctor Schemas
+# --- DOCTOR SCHEMAS ---
 class DoctorCreate(BaseModel):
     username: str
     password: str
     contact: str
     price: float
+
+class DoctorInfoBase(BaseModel):
+    uni_name: str
+    faculty: str
+    department: str
+    start_teaching_year: int
+
+class DoctorInfoCreate(DoctorInfoBase):
+    doctor_id: int
+
+class DoctorInfoUpdate(BaseModel):
+    uni_name: Optional[str] = None
+    faculty: Optional[str] = None
+    department: Optional[str] = None
+    start_teaching_year: Optional[int] = None
 
 class LoginRequest(BaseModel):
     username: str
