@@ -25,7 +25,9 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)/app
+          # Point to root (pwd) instead of app folder
+          export PYTHONPATH=$PYTHONPATH:$(pwd) 
           pytest test/test_integration.py
         env:
           DATABASE_URL: ${{ secrets.DB_CONNECTION_DEV }}
+        
