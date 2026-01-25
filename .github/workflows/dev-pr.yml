@@ -1,0 +1,16 @@
+name: Pull Request to Dev
+on:
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: npm install && npm run build 
+      - name: Run Integration Tests
+        run: npm test ./test/integration 
+        env:
+          DATABASE_URL: ${{ secrets.DB_CONNECTION_DEV }}
