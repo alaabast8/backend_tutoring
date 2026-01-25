@@ -8,6 +8,7 @@ router = APIRouter(prefix="/doctor-info", tags=["Doctor Info"])
 @router.get("/check/{doctor_id}")
 def check_doctor_profile(doctor_id: int, db: Session = Depends(get_db)):
     profile_exists = db.query(DoctorInfo.id).filter(DoctorInfo.doctor_id == doctor_id).first()
+    print("hi")
     return {
         "exists": True if profile_exists else False,
         "doctor_id": doctor_id,
@@ -27,7 +28,7 @@ def create_doctor_info(details: DoctorInfoCreate, db: Session = Depends(get_db))
     if existing:
         raise HTTPException(status_code=400, detail="Profile already exists")
 
-    new_info = DoctorInfo(**details.dict())
+    new_info = DoctorInfo(**details.model_dump())
     db.add(new_info)
     db.commit()
     db.refresh(new_info)

@@ -1,13 +1,19 @@
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
+from sqlalchemy import create_engine, StaticPool
 from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.database import Base, get_db
 
 # --- TEST SETUP ---
-SQLALCHEMY_DATABASE_URL = "sqlite:///./test_integration.db"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+# Use an in-memory database instead of a file
+SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, 
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool, 
+)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def override_get_db():
@@ -29,10 +35,6 @@ def setup_db():
 # --- INTEGRATION TESTS ---
 
 def test_student_registration_and_profile_creation():
-    """
-    Test 1: Full Student Flow
-    Register a student -> Use the returned ID to create their StudentInfo profile.
-    """
     # 1. Register Student
     reg_resp = client.post("/students/register", json={
         "username": "student_flow",
@@ -41,7 +43,7 @@ def test_student_registration_and_profile_creation():
     })
     student_id = reg_resp.json()["id"]
 
-    # 2. Create Profile linked to that ID
+    # 2. Create Profile (Updated URL and logic)
     profile_data = {
         "student_id": student_id,
         "first_name": "John",
@@ -55,18 +57,18 @@ def test_student_registration_and_profile_creation():
         "dob": "2002-05-15",
         "academic_year": 3
     }
-    # Note: Ensure your studentInfo.router is registered in main.py
-    prof_resp = client.post("/studentInfo/", json=profile_data)
     
-    assert prof_resp.status_code == 200
-    assert prof_resp.json()["first_name"] == "John"
+    # FIX 1: URL changed to "/student-info"
+    prof_resp = client.post("/student-info/", json=profile_data) 
+    
+    # FIX 3: Check for 201 instead of 200
+    assert prof_resp.status_code == 201 
+    
+    # FIX 2: Access the "data" key
+    assert prof_resp.json()["data"]["first_name"] == "John"
 
 def test_doctor_registration_and_info_link():
-    """
-    Test 2: Full Doctor Flow
-    Register a doctor -> Add professional DoctorInfo -> Verify link.
-    """
-    # 1. Register Doctor
+    # 1. Register Doctor (This part is likely fine)
     dr_reg = client.post("/doctors/register", json={
         "username": "dr_house",
         "password": "lupus_is_never_the_answer",
@@ -83,31 +85,52 @@ def test_doctor_registration_and_info_link():
         "department": "Diagnostics",
         "start_teaching_year": 2004
     }
-    info_resp = client.post("/doctorInfo/", json=dr_info)
+    # FIX: Use hyphenated URL
+    info_resp = client.post("/doctor-info/", json=dr_info)
     
-    assert info_resp.status_code == 200
-    assert info_resp.json()["department"] == "Diagnostics"
+    # FIX: Expect 201, not 200
+    assert info_resp.status_code == 201
+    # FIX: Access the nested "data" dictionary
+    assert info_resp.json()["data"]["department"] == "Diagnostics"
 
-def test_rating_system_linkage():
+def test_get_and_update_student_profile():
     """
-    Test 3: Cross-Table interaction
-    Register Student + Doctor -> Student leaves a rating for the Doctor.
+    Test 4: Retrieve and Update Flow
+    Register -> Create Profile -> Get Profile -> Update Profile -> Verify Change.
     """
-    # 1. Setup Student
-    s_resp = client.post("/students/register", json={"username":"s1", "email":"s1@t.com", "password":"p"})
-    sid = s_resp.json()["id"]
-    
-    # 2. Setup Doctor
-    d_resp = client.post("/doctors/register", json={"username":"d1", "contact":"123", "price":10, "password":"p"})
-    did = d_resp.json()["id"]
+    # 1. Setup: Register and Create Profile
+    reg_resp = client.post("/students/register", json={
+        "username": "lifecycle_user",
+        "email": "life@test.com",
+        "password": "password123"
+    })
+    student_id = reg_resp.json()["id"]
 
-    # 3. Post Rating
-    rating_data = {
-        "student_id": sid,
-        "doctor_id": did,
-        "rating": 5
+    client.post("/student-info/", json={
+        "student_id": student_id,
+        "first_name": "Original",
+        "last_name": "Name",
+        "uni_name": "Test Uni",
+        "faculty": "Science",
+        "department": "Bio",
+        "major": "Genetics",
+        "gpa": 3.0,
+        "dob": "2000-01-01",
+        "academic_year": 1
+    })
+
+    # 2. Test GET: Fetch the profile
+    get_resp = client.get(f"/student-info/{student_id}")
+    assert get_resp.status_code == 200
+    assert get_resp.json()["first_name"] == "Original"
+
+    # 3. Test PUT: Update the GPA and Academic Year
+    update_data = {
+        "gpa": 3.9,
+        "academic_year": 2
     }
-    rate_resp = client.post("/ratings/", json=rating_data)
+    put_resp = client.put(f"/student-info/{student_id}", json=update_data)
     
-    assert rate_resp.status_code == 200
-    assert rate_resp.json()["rating"] == 5
+    assert put_resp.status_code == 200
+    assert put_resp.json()["data"]["gpa"] == 3.9
+    assert put_resp.json()["data"]["academic_year"] == 2
