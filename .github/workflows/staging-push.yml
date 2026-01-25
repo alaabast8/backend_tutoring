@@ -21,11 +21,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest
-
+      
       - name: Build & Run All Tests
         run: |
-          export PYTHONPATH=$PYTHONPATH:$(pwd)/app
-          pytest test/ # Runs both test_integration.py and test_units.py
+          export PYTHONPATH=$PYTHONPATH:$(pwd)
+          pytest
         env:
           DATABASE_URL: ${{ secrets.DB_CONNECTION_STAGING }}
 
