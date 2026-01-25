@@ -1,0 +1,17 @@
+name: Push to Dev
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  sync-to-staging:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to Staging
+        run: |
+          git checkout staging
+          git merge dev
+          git push origin staging
