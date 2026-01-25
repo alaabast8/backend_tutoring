@@ -24,8 +24,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
+      
       - name: Run Integration Tests
+        env:
+          PYTHONPATH: .
+          DATABASE_URL: sqlite:///./test.db 
         run: |
-          # We point specifically to your integration test file
           pytest test/test_integration.py
+          
