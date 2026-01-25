@@ -1,7 +1,18 @@
+# Web Framework & Server
 fastapi
 uvicorn[standard]
+
+# Database Drivers & Tools
 sqlalchemy
 psycopg2-binary
 python-dotenv
-passlib[bcrypt]
-pydantic
+
+# Security & Validation
+bcrypt
+email-validator
+pydantic[email]
+
+# Testing & Quality Assurance
+pytest
+httpx
+pytest-asyncio
