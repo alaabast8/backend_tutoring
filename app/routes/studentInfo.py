@@ -16,7 +16,8 @@ def create_student_info(details: StudentInfoCreate, db: Session = Depends(get_db
     if existing:
         raise HTTPException(status_code=400, detail="Profile already exists for this student")
 
-    new_info = StudentInfo(**details.dict())
+    # FIX: Using .model_dump() instead of .dict()
+    new_info = StudentInfo(**details.model_dump())
     db.add(new_info)
     db.commit()
     db.refresh(new_info)
@@ -36,7 +37,8 @@ def update_student_info(student_id: int, updates: StudentInfoUpdate, db: Session
         raise HTTPException(status_code=404, detail="Profile not found")
 
     # Update only fields provided in the request body
-    update_data = updates.dict(exclude_unset=True)
+    # FIX: Using .model_dump(exclude_unset=True) instead of .dict()
+    update_data = updates.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_info, key, value)
 
@@ -49,7 +51,6 @@ def check_student_profile_exists(student_id: int, db: Session = Depends(get_db))
     """
     Checks if a record exists in StudentInfo for a given student_id.
     """
-    # We only need the ID to confirm existence, which is faster than fetching the whole row
     profile_exists = db.query(StudentInfo.id).filter(StudentInfo.student_id == student_id).first()
     
     if profile_exists:

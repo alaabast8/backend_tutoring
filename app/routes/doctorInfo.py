@@ -28,7 +28,7 @@ def create_doctor_info(details: DoctorInfoCreate, db: Session = Depends(get_db))
     if existing:
         raise HTTPException(status_code=400, detail="Profile already exists")
 
-    new_info = DoctorInfo(**details.dict())
+    new_info = DoctorInfo(**details.model_dump())
     db.add(new_info)
     db.commit()
     db.refresh(new_info)
