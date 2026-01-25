@@ -10,7 +10,7 @@ from ..database import get_db, Student, get_password_hash, verify_password, Stud
 @router.post("/register")
 def register_student(details: StudentCreate, db: Session = Depends(get_db)):
     # 1. Check if username OR email already exists
-    print("hiie")
+    print("me test")
     existing_user = db.query(Student).filter(
         (Student.username == details.username) | (Student.email == details.email)
     ).first()
