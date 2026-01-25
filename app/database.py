@@ -1,8 +1,7 @@
 import os
 import bcrypt
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Boolean, CheckConstraint
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker, relationship, DeclarativeBase  # Changed this
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from dotenv import load_dotenv
@@ -14,26 +13,27 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+
+# --- MODERN DECLARATIVE BASE ---
+# This replaces Base = declarative_base() and removes the warning
+class Base(DeclarativeBase):
+    pass
 
 # --- PASSWORD SECURITY ---
-
+# (Your hashing functions remain the same)
 def get_password_hash(password: str) -> str:
-    """Hashes a plain text password using bcrypt."""
     pwd_bytes = password.encode('utf-8')
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(pwd_bytes, salt)
     return hashed.decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifies a plain text password against a stored hash."""
     return bcrypt.checkpw(
         plain_password.encode('utf-8'), 
         hashed_password.encode('utf-8')
     )
 
 # --- DATABASE UTILS ---
-
 def get_db():
     db = SessionLocal()
     try:
