@@ -24,8 +24,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-
+      
       - name: Run Integration Tests
+        env:
+          PYTHONPATH: .
         run: |
-          # We point specifically to your integration test file
+          # 1. List files to see exactly where we are (for debugging)
+          ls -R
+          
+          # 2. Run the specific file using the path you confirmed
           pytest test/test_integration.py
+          
