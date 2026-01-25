@@ -8,6 +8,7 @@ router = APIRouter(prefix="/doctor-info", tags=["Doctor Info"])
 @router.get("/check/{doctor_id}")
 def check_doctor_profile(doctor_id: int, db: Session = Depends(get_db)):
     profile_exists = db.query(DoctorInfo.id).filter(DoctorInfo.doctor_id == doctor_id).first()
+    print("hi")
     return {
         "exists": True if profile_exists else False,
         "doctor_id": doctor_id,
