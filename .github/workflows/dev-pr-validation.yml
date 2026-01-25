@@ -28,10 +28,7 @@ jobs:
       - name: Run Integration Tests
         env:
           PYTHONPATH: .
+          DATABASE_URL: sqlite:///./test.db 
         run: |
-          # 1. List files to see exactly where we are (for debugging)
-          ls -R
-          
-          # 2. Run the specific file using the path you confirmed
           pytest test/test_integration.py
           
