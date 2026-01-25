@@ -1,7 +1,10 @@
-name: Pull Request to Dev
+name: Feature Branch Integration
 on:
   pull_request:
-    branches: [ dev ]
+    branches: 
+      - tutors_interface
+      - students_interface
+      - login_register
 
 jobs:
   build-and-test:

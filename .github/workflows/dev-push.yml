@@ -1,7 +1,10 @@
-name: Push to Dev
+name: Sync Feature to Staging
 on:
   push:
-    branches: [ dev ]
+    branches:
+      - tutors_interface
+      - students_interface
+      - login_register
 
 jobs:
   sync-to-staging:
@@ -12,6 +15,8 @@ jobs:
           fetch-depth: 0
       - name: Push to Staging
         run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout staging
-          git merge dev
+          git merge ${{ github.ref_name }} # Merges the specific feature branch that triggered the push
           git push origin staging
