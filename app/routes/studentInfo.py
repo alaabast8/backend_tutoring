@@ -29,6 +29,13 @@ def get_student_info(student_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Profile not found")
     return info
 
+@router.get("/{student_id}/2")
+def get_student_info2(student_id: int, db: Session = Depends(get_db)):
+    info = db.query(StudentInfo).filter(StudentInfo.student_id == student_id).first()
+    if not info:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return info
+
 @router.put("/{student_id}")
 def update_student_info(student_id: int, updates: StudentInfoUpdate, db: Session = Depends(get_db)):
     db_info = db.query(StudentInfo).filter(StudentInfo.student_id == student_id).first()
