@@ -13,10 +13,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          
       - name: Push to Staging
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin staging
           git checkout staging
-          git merge ${{ github.ref_name }} # Merges the specific feature branch that triggered the push
+          git merge origin/${{ github.ref_name }} --no-edit
           git push origin staging
