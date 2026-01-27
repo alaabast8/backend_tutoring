@@ -4,8 +4,6 @@ on:
   pull_request:
     branches:
       - dev
-    # This triggers on PRs coming from any branch (feature-1, feature-2, etc.) 
-    # as long as the target is 'dev'.
 
 jobs:
   build-and-test:

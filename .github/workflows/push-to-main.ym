@@ -1,0 +1,44 @@
+name: Staging to Main Deployment
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  build-test-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Build the app
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run all tests
+        env:
+          # This uses your Neon PostgreSQL URL from GitHub Secrets
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          PYTHONPATH: .
+        run: |
+          # This runs both test_units.py and test_integration.py
+          pytest test/
+
+      - name: Push to production branch (main)
+        if: success()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git merge staging
+          git push origin main
