@@ -19,6 +19,7 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 def override_get_db():
     try:
         db = TestingSessionLocal()
+        print("feifs")
         yield db
     finally:
         db.close()
