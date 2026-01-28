@@ -14,7 +14,7 @@ engine = create_engine(
 )
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Override the get_db dependency to use the test database
+# Override the get_db dependency to use the test database not original
 def override_get_db():
     try:
         db = TestingSessionLocal()
