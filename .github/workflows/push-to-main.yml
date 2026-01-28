@@ -1,41 +1,45 @@
-name: Staging to Main Deployment
+name: Staging to Production
 
 on:
-  workflow_run:
-    workflows: ["Sync Dev to Staging"]
-    types:
-      - completed
+  push:
+    branches:
+      - staging
 
 jobs:
-  build-test-deploy:
+  validate-and-deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          ref: staging 
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Build and Test
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
-          PYTHONPATH: .
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-          pytest test/
-
-      - name: Push to production branch (main)
+      
+      - name: Run All Tests (Unit & Integration)
+        env:
+          PYTHONPATH: .
+          DATABASE_URL: sqlite:///./test.db 
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout main
-          git merge staging
-          git push origin main
+          # This runs both test_units.py and test_integration.py
+          pytest test/test_units.py test/test_integration.py
+
+      - name: Push to Production (Main)
+        if: success() # Only runs if the tests pass
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Merge staging into main
+          git checkout main || git checkout -b main
+          git reset --hard origin/staging
+          git push origin main --force
