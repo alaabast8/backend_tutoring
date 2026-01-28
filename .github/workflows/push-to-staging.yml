@@ -23,3 +23,8 @@ jobs:
           git checkout staging || git checkout -b staging
           git reset --hard origin/dev
           git push origin staging --force
+      
+  trigger-production:
+    needs: sync-branches # Ensures this only runs after the push succeeds
+    uses: ./.github/workflows/push-to-main.yml
+    secrets: inherit

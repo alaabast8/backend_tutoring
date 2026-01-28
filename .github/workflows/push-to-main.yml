@@ -1,6 +1,7 @@
 name: Staging to Production
 
 on:
+  workflow_call:
   push:
     branches:
       - staging
