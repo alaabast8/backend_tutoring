@@ -29,4 +29,6 @@ jobs:
   trigger-production:
     needs: sync-branches # Ensures this only runs after the push succeeds
     uses: ./.github/workflows/push-to-main.yml
+    permissions:
+      contents: write
     secrets: inherit
