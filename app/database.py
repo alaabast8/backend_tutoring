@@ -37,6 +37,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # --- DATABASE UTILS ---
 def get_db():
     db = SessionLocal()
+    print("hello")
     try:
         yield db
     finally:
