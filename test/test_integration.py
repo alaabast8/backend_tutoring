@@ -7,7 +7,7 @@ from app.main import app
 from app.database import Base, get_db
 
 # --- TEST SETUP ---
-# Use an in-memory database instead of a file
+# Use an in-memory database instead of a file////
 SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, 
