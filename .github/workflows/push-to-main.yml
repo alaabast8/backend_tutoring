@@ -1,0 +1,48 @@
+name: Staging to Production
+
+on:
+  workflow_call:
+  push:
+    branches:
+      - staging
+permissions:
+  contents: write 
+  
+jobs:
+  validate-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      
+      - name: Run All Tests (Unit & Integration)
+        env:
+          PYTHONPATH: .
+          DATABASE_URL: sqlite:///./test.db 
+        run: |
+          # This runs both test_units.py and test_integration.py
+          pytest test/test_units.py test/test_integration.py
+
+      - name: Push to Production (Main)
+        if: success() # Only runs if the tests pass
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          # Merge staging into main
+          git checkout main || git checkout -b main
+          git reset --hard origin/staging
+          git push origin main --force
