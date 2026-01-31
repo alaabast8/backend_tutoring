@@ -1,7 +1,7 @@
 import os
 import bcrypt
 from sqlalchemy import create_engine, Column, Integer, String, Float, ForeignKey, Boolean, CheckConstraint
-from sqlalchemy.orm import sessionmaker, relationship, DeclarativeBase  # Changed this
+from sqlalchemy.orm import sessionmaker, relationship, DeclarativeBase
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from dotenv import load_dotenv
@@ -15,12 +15,10 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # --- MODERN DECLARATIVE BASE ---
-# This replaces Base = declarative_base() and removes ewffrvfvfvfwthe warning
 class Base(DeclarativeBase):
     pass
 
 # --- PASSWORD SECURITY ---
-# (Your hashing functions remain the same)
 def get_password_hash(password: str) -> str:
     pwd_bytes = password.encode('utf-8')
     salt = bcrypt.gensalt()
@@ -63,13 +61,21 @@ class StudentInfo(Base):
     faculty = Column(String)
     department = Column(String)
     major = Column(String)
-    disability = Column(Boolean, default=False)
-    gpa = Column(Float)
     dob = Column(String)  # Format: YYYY-MM-DD
     academic_year = Column(Integer)
+    
+    # New Fields
+    disability = Column(Boolean, default=False)
+    athletic_status = Column(String) 
+    country_of_origin = Column(String)
+    country_of_residence = Column(String)
+    gender = Column(String)
+    primary_language = Column(String)
+    study_hours = Column(Float)
 
     __table_args__ = (
         CheckConstraint('academic_year >= 0 AND academic_year <= 5', name='year_range_check'),
+        {'extend_existing': True} # Prevents crash on redefinition
     )
 
     owner = relationship("Student", back_populates="profile")
@@ -82,7 +88,6 @@ class Doctor(Base):
     contact = Column(String)
     price_per_hour = Column(Float)
 
-    # Relationship to professional info
     profile = relationship("DoctorInfo", back_populates="owner", uselist=False)
 
 class DoctorInfo(Base):
@@ -105,7 +110,6 @@ class StdDrRate(Base):
 
 # --- PYDANTIC SCHEMAS ---
 
-# --- STUDENT SCHEMAS ---
 class StudentCreate(BaseModel):
     username: str
     email: EmailStr
@@ -118,10 +122,15 @@ class StudentInfoBase(BaseModel):
     faculty: str
     department: str
     major: str
-    disability: bool = False
-    gpa: float
     dob: str
     academic_year: int
+    disability: bool = False
+    athletic_status: str
+    country_of_origin: str
+    country_of_residence: str
+    gender: str
+    primary_language: str
+    study_hours: float
 
 class StudentInfoCreate(StudentInfoBase):
     student_id: int
@@ -133,12 +142,16 @@ class StudentInfoUpdate(BaseModel):
     faculty: Optional[str] = None
     department: Optional[str] = None
     major: Optional[str] = None
-    disability: Optional[bool] = None
-    gpa: Optional[float] = None
     dob: Optional[str] = None
     academic_year: Optional[int] = None
+    disability: Optional[bool] = None
+    athletic_status: Optional[str] = None
+    country_of_origin: Optional[str] = None
+    country_of_residence: Optional[str] = None
+    gender: Optional[str] = None
+    primary_language: Optional[str] = None
+    study_hours: Optional[float] = None
 
-# --- DOCTOR SCHEMAS ---
 class DoctorCreate(BaseModel):
     username: str
     password: str

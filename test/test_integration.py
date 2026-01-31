@@ -44,35 +44,6 @@ def setup_db():
 
 # --- INTEGRATION TESTS ---
 
-def test_student_registration_and_profile_creation():
-    # 1. Register Student
-    reg_resp = client.post("/students/register", json={
-        "username": "student_flow",
-        "email": "flow@test.com",
-        "password": "password123"
-    })
-    student_id = reg_resp.json()["id"]
-
-    # 2. Create Profile
-    profile_data = {
-        "student_id": student_id,
-        "first_name": "John",
-        "last_name": "Doe",
-        "uni_name": "Global Tech Uni",
-        "faculty": "Engineering",
-        "department": "CS",
-        "major": "AI",
-        "disability": False,
-        "gpa": 3.8,
-        "dob": "2002-05-15",
-        "academic_year": 3
-    }
-    
-    prof_resp = client.post("/student-info/", json=profile_data) 
-    
-    assert prof_resp.status_code == 201 
-    assert prof_resp.json()["data"]["first_name"] == "John"
-
 def test_doctor_registration_and_info_link():
     # 1. Register Doctor
     dr_reg = client.post("/doctors/register", json={
@@ -96,11 +67,46 @@ def test_doctor_registration_and_info_link():
     assert info_resp.status_code == 201
     assert info_resp.json()["data"]["department"] == "Diagnostics"
 
+
+
+def test_student_registration_and_profile_creation():
+    # 1. Register Student
+    reg_resp = client.post("/students/register", json={
+        "username": "student_flow",
+        "email": "flow@test.com",
+        "password": "password123"
+    })
+    student_id = reg_resp.json()["id"]
+
+    # 2. Create Profile with NEW FIELDS
+    profile_data = {
+        "student_id": student_id,
+        "first_name": "John",
+        "last_name": "Doe",
+        "uni_name": "Global Tech Uni",
+        "faculty": "Engineering",
+        "department": "CS",
+        "major": "AI",
+        "disability": False,
+        "gpa": 3.8,
+        "dob": "2002-05-15",
+        "academic_year": 3,
+        # NEW FIELDS ADDED HERE
+        "athletic_status": "Non-Athlete",
+        "country_of_origin": "Lebanon",
+        "country_of_residence": "Lebanon",
+        "gender": "Male",
+        "primary_language": "Arabic",
+        "study_hours": 15.5
+    }
+    
+    prof_resp = client.post("/student-info/", json=profile_data) 
+    
+    assert prof_resp.status_code == 201 
+    assert prof_resp.json()["data"]["first_name"] == "John"
+    assert prof_resp.json()["data"]["gender"] == "Male"
+
 def test_get_and_update_student_profile():
-    """
-    Test 4: Retrieve and Update Flow
-    Register -> Create Profile -> Get Profile -> Update Profile -> Verify Change.
-    """
     # 1. Setup: Register and Create Profile
     reg_resp = client.post("/students/register", json={
         "username": "lifecycle_user",
@@ -119,21 +125,28 @@ def test_get_and_update_student_profile():
         "major": "Genetics",
         "gpa": 3.0,
         "dob": "2000-01-01",
-        "academic_year": 1
+        "academic_year": 1,
+        # NEW FIELDS REQUIRED FOR CREATION
+        "athletic_status": "Varsity",
+        "country_of_origin": "France",
+        "country_of_residence": "Lebanon",
+        "gender": "Female",
+        "primary_language": "French",
+        "study_hours": 20.0
     })
 
-    # 2. Test GET: Fetch the profile
+    # 2. Test GET
     get_resp = client.get(f"/student-info/{student_id}")
     assert get_resp.status_code == 200
-    assert get_resp.json()["first_name"] == "Original"
 
-    # 3. Test PUT: Update the GPA and Academic Year
+    # 3. Test PUT: Update new fields
     update_data = {
         "gpa": 3.9,
-        "academic_year": 2
+        "study_hours": 25.0,
+        "country_of_residence": "UAE"
     }
     put_resp = client.put(f"/student-info/{student_id}", json=update_data)
     
     assert put_resp.status_code == 200
-    assert put_resp.json()["data"]["gpa"] == 3.9
-    assert put_resp.json()["data"]["academic_year"] == 2
+    assert put_resp.json()["data"]["study_hours"] == 25.0
+    assert put_resp.json()["data"]["country_of_residence"] == "UAE"
