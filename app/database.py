@@ -15,7 +15,7 @@ engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # --- MODERN DECLARATIVE BASE ---
-# This replaces Base = declarative_base() and removes the warning
+# This replaces Base = declarative_base() and removes ewffrvfvfvfwthe warning
 class Base(DeclarativeBase):
     pass
 
