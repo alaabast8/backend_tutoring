@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from .database import engine, Base
-from .routes import doctors, students, ratings ,studentInfo,doctorInfo
+from database import engine, Base
+from routes import doctors, students, ratings ,studentInfo,doctorInfo,ml_predictions
 from fastapi.middleware.cors import CORSMiddleware
 
 # This command triggers the creation of tables in PostgreSQL
@@ -28,6 +28,7 @@ app.include_router(students.router)
 app.include_router(ratings.router)
 app.include_router(studentInfo.router)
 app.include_router(doctorInfo.router)
+app.include_router(ml_predictions.router) 
 @app.get("/")
 def read_root():
     return {"status": "System Online"}

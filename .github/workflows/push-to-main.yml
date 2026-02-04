@@ -1,10 +1,13 @@
 name: Staging to Production
 
 on:
+  workflow_call:
   push:
     branches:
       - staging
-
+permissions:
+  contents: write 
+  
 jobs:
   validate-and-deploy:
     runs-on: ubuntu-latest
