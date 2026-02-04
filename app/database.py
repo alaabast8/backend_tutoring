@@ -108,6 +108,12 @@ class StdDrRate(Base):
     doctor_id = Column(Integer, ForeignKey("doctors.id"))
     rating = Column(Integer)
 
+class StudentGPA(Base):
+    __tablename__ = "student_gpa"
+    id = Column(Integer, primary_key=True, index=True)
+    student_id = Column(Integer, ForeignKey("students.id"), unique=True)
+    predicted_gpa = Column(Float)
+
 # --- PYDANTIC SCHEMAS ---
 
 class StudentCreate(BaseModel):
@@ -176,3 +182,18 @@ class DoctorInfoUpdate(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
+
+class StudentGPACreate(BaseModel):
+    student_id: int
+    predicted_gpa: float
+
+class StudentGPAResponse(BaseModel):
+    id: int
+    student_id: int
+    predicted_gpa: float
+    
+    class Config:
+        from_attributes = True  # For Pydantic v2, use orm_mode = True for Pydantic v1
+
+class StudentGPAUpdate(BaseModel):
+    predicted_gpa: float
