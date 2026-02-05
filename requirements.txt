@@ -1,18 +1,21 @@
 # Web Framework & Server
-fastapi
-uvicorn[standard]
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
 
 # Database Drivers & Tools
-sqlalchemy
-psycopg2-binary
-python-dotenv
+sqlalchemy==2.0.35
+psycopg2-binary==2.9.9
+python-dotenv==1.0.1
 
 # Security & Validation
-bcrypt
-email-validator
-pydantic[email]
+bcrypt==4.2.0
+email-validator==2.2.0
+pydantic[email]==2.9.2
 
-# Testing & Quality Assurance
-pytest
-httpx
-pytest-asyncio
+# HTTP Client for ML Container
+requests==2.32.3
+
+# Testing & Quality Assurance (optional for production)
+pytest==8.3.3
+httpx==0.27.2
+pytest-asyncio==0.24.0
