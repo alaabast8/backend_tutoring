@@ -16,3 +16,4 @@ pydantic[email]
 pytest
 httpx
 pytest-asyncio
+requests

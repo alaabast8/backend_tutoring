@@ -1,12 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from ..database import get_db, Student, StudentInfo, StudentInfoCreate, StudentInfoUpdate
+from ..database import get_db, Student, StudentInfo, StudentInfoCreate, StudentInfoUpdate ,  StudentGPA , StudentGPAResponse
 
 router = APIRouter(prefix="/student-info", tags=["Student Info"])
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 def create_student_info(details: StudentInfoCreate, db: Session = Depends(get_db)):
     # Verify student exists
+    print(StudentInfo)
     student = db.query(Student).filter(Student.id == details.student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Student account not found")
@@ -65,3 +66,18 @@ def check_student_profile_exists(student_id: int, db: Session = Depends(get_db))
         "student_id": student_id, 
         "profile_id": None
     }
+
+@router.get("/{student_id}", response_model=StudentGPAResponse)
+def get_student_gpa(student_id: int, db: Session = Depends(get_db)):
+    """
+    Fetch the predicted GPA for a specific student by their student_id.
+    """
+    gpa_record = db.query(StudentGPA).filter(StudentGPA.student_id == student_id).first()
+    
+    if not gpa_record:
+        raise HTTPException(
+            status_code=404, 
+            detail=f"GPA record for student ID {student_id} not found"
+        )
+    
+    return gpa_record

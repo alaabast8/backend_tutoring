@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from ..database import get_db, Doctor, DoctorInfo, DoctorInfoCreate, DoctorInfoUpdate
+from typing import List, Optional
 
 router = APIRouter(prefix="/doctor-info", tags=["Doctor Info"])
 
@@ -56,3 +57,42 @@ def update_doctor_info(doctor_id: int, updates: DoctorInfoUpdate, db: Session = 
     db.commit()
     db.refresh(db_info)
     return {"message": "Doctor profile updated", "data": db_info}
+
+@router.get("/filter/", response_model=List[dict]) 
+def get_doctors_by_department_and_faculty(
+    faculty: str, 
+    db: Session = Depends(get_db)
+):
+    # Query DoctorInfo with joined loading of the Doctor relationship
+    results = db.query(DoctorInfo).options(
+        joinedload(DoctorInfo.owner)
+    ).filter(
+        DoctorInfo.faculty == faculty
+    ).all()
+
+    if not results:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="No doctors found in this department and faculty"
+        )
+
+    # Convert to dict with doctor information included
+    doctors_list = []
+    for doctor_info in results:
+        doctor_dict = {
+            "id": doctor_info.id,
+            "doctor_id": doctor_info.doctor_id,
+            "uni_name": doctor_info.uni_name,
+            "faculty": doctor_info.faculty,
+            "department": doctor_info.department,
+            "start_teaching_year": doctor_info.start_teaching_year,
+            "owner": {
+                "id": doctor_info.owner.id,
+                "username": doctor_info.owner.username,
+                "contact": doctor_info.owner.contact,
+                "price_per_hour": doctor_info.owner.price_per_hour
+            } if doctor_info.owner else None
+        }
+        doctors_list.append(doctor_dict)
+
+    return doctors_list
