@@ -12,10 +12,7 @@ from app.routes import doctors, students, ratings, studentInfo, doctorInfo, ml_p
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Health API")
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
+origins = ["*"]
 
 # 2. Add the middleware
 app.add_middleware(
