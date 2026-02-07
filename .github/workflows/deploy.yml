@@ -1,17 +1,26 @@
 name: Deploy to Railway
 
 on:
+  # Keep this to allow manual pushes by humans to trigger it
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  # Add this block to trigger when your other pipelines finish
+  workflow_run:
+    workflows: ["Staging to Production", "Sync Dev to Staging"]
+    types:
+      - completed
 
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    # Only run if the previous workflow succeeded (or if it was a manual push)
+    if: ${{ !github.event.workflow_run || github.event.workflow_run.conclusion == 'success' }}
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: main # Explicitly checkout main to ensure we get the latest commit
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -27,9 +36,10 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-health-app
+          # Hardcode latest/main tags since the event might be a workflow_run
           tags: |
             type=raw,value=latest
-            type=sha,prefix={{branch}}-
+            type=sha,prefix=main-
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
