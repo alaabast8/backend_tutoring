@@ -10,9 +10,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PORT=8000
 
 # Install system dependencies
+# REMOVED gcc and postgresql-client to save space and fix build timeout
 RUN apt-get update && apt-get install -y \
-    gcc \
-    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
