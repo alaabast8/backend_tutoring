@@ -8,7 +8,7 @@ from app.database import engine, Base
 from app.routes import doctors, students, ratings, studentInfo, doctorInfo, ml_predictions
 
 # This command triggers the creation of tables in PostgreSQL
-# It checks if they exist; if not, it createsvdf them.
+# It checks if they exist; if not, it createsvdf them.oos
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Health API")
