@@ -6,7 +6,7 @@ router = APIRouter(prefix="/doctors", tags=["Doctors"])
 
 @router.post("/register")
 def register_dr(details: DoctorCreate, db: Session = Depends(get_db)):
-    # Check if doctor already exists
+    # Check if doctor already existsfff43
     existing_dr = db.query(Doctor).filter(Doctor.username == details.username).first()
     if existing_dr:
         raise HTTPException(status_code=400, detail="Username already registered")
