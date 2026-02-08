@@ -36,7 +36,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: ${{ secrets.DOCKERHUB_USERNAME }}/fastapi-health-app
-          # Hardcode latest/main tags since the event might be a workflow_run
+          # Hardcode latest/main tags since the event might be a workflow_runtest
           tags: |
             type=raw,value=latest
             type=sha,prefix=main-
